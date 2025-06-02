@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# Location of link to wallpaper
+bgloc="${XDG_DATA_HOME:-$HOME/.local/share}/bg"
+
+xwallpaper --zoom "$bgloc"
