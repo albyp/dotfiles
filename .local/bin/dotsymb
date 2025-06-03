@@ -1,7 +1,18 @@
 #!/bin/bash
 
-# Create symbolic links (force) between dotfiles and config.
+# Create symbolic links (force) between dotfiles and config/local.
 # Use after downloading dotfiles to ~/.dotfiles
+
+DOTFILES_BIN="$HOME/.dotfiles/.local/bin"
+USER_BIN="$HOME/.local/bin"
+
+mkdir -p "$USER_BIN"
+
+# Symlink all user scripts from ~/.dotfiles/.local/bin to ~/.local/bin
+for file in "$DOTFILES_BIN"/*; do
+	[ -f "$file" ] || continue # skip non-regular files
+	ln -sf "$file" "$USER_BIN/$(basename "$file")"
+done
 
 # Vim
 ln -sf ~/.dotfiles/.config/nvim/init.vim ~/.config/nvim/init.vim
@@ -25,9 +36,3 @@ ln -sf ~/.dotfiles/.config/shell/profile ~/.config/shell/profile
 
 # Zsh
 ln -sf ~/.dotfiles/.config/zsh/.zshrc ~/.config/zsh/.zshrc
-
-# Shell scripts
-ln -sf ~/.dotfiles/.local/bin/dotsymb ~/.local/bin/dotsymb
-ln -sf ~/.dotfiles/.local/bin/lfub ~/.local/bin/lfub
-ln -sf ~/.dotfiles/.local/bin/setbg ~/.local/bin/setbg
-ln -sf ~/.dotfiles/.local/bin/shortcuts ~/.local/bin/shortcuts
