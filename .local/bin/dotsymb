@@ -3,36 +3,52 @@
 # Create symbolic links (force) between dotfiles and config/local.
 # Use after downloading dotfiles to ~/.dotfiles
 
+# Paths
+DOTFILES_CONFIG="$HOME/.dotfiles/.config"
 DOTFILES_BIN="$HOME/.dotfiles/.local/bin"
+USER_CONFIG="$HOME/.config"
 USER_BIN="$HOME/.local/bin"
 
+mkdir -p "$USER_CONFIG"
 mkdir -p "$USER_BIN"
 
-# Symlink all user scripts from ~/.dotfiles/.local/bin to ~/.local/bin
+# Symlink all files from ~/.dotfiles/.local/bin to ~/.local/bin
 for file in "$DOTFILES_BIN"/*; do
 	[ -f "$file" ] || continue # skip non-regular files
 	ln -sf "$file" "$USER_BIN/$(basename "$file")"
 done
 
-# Vim
-ln -sf ~/.dotfiles/.config/nvim/init.vim ~/.config/nvim/init.vim
+# Recursively symlink files from ~/.dotfiles/.config to ~/.config
+find "$DOTFILES_CONFIG" -type f | while read -r src; do
+	rel_path="${src#DOTFILES_CONFIG/}"			# relativce path from .config
+	dest="$USER_CONFIG/$rel_path"
+	mkdir -p "$(dirname "$dest")"				# ensure directory exists
 
-# LF
-ln -sf ~/.dotfiles/.config/lf/cleaner	 ~/.config/lf/cleaner
-ln -sf ~/.dotfiles/.config/lf/icons    	 ~/.config/lf/icons
-ln -sf ~/.dotfiles/.config/lf/lfrc	 ~/.config/lf/lfrc
-ln -sf ~/.dotfiles/.config/lf/scope	 ~/.config/lf/scope
+	# Check if old config exists and is not symlinked, moves to $dest.old
+	[ -e "$dest" ] && [ ! -L "$dest" ] && mv "$dest" "$dest.old" && echo "Backed up: $dest -> $dest.old"
+	ln -sf "$src $dest" && echo "Linked: $dest -> $src"
+done
 
-# X11
-ln -sf ~/.dotfiles/.config/x11/xinitrc	 ~/.config/x11/xinitrc
-ln -sf ~/.dotfiles/.config/x11/xprofile	 ~/.config/x11/xprofile
-
-# Shell
-ln -sf ~/.dotfiles/.config/shell/aliasrc ~/.config/shell/aliasrc
-ln -sf ~/.dotfiles/.config/shell/bm-dirs ~/.config/shell/bm-dirs
-ln -sf ~/.dotfiles/.config/shell/bm-files ~/.config/shell/bm-files
-ln -sf ~/.dotfiles/.config/shell/inputrc ~/.config/shell/inputrc
-ln -sf ~/.dotfiles/.config/shell/profile ~/.config/shell/profile
-
-# Zsh
-ln -sf ~/.dotfiles/.config/zsh/.zshrc ~/.config/zsh/.zshrc
+# Old script individual lines
+# # Vim
+# ln -sf ~/.dotfiles/.config/nvim/init.vim ~/.config/nvim/init.vim
+#
+# # LF
+# ln -sf ~/.dotfiles/.config/lf/cleaner	 ~/.config/lf/cleaner
+# ln -sf ~/.dotfiles/.config/lf/icons    	 ~/.config/lf/icons
+# ln -sf ~/.dotfiles/.config/lf/lfrc	 ~/.config/lf/lfrc
+# ln -sf ~/.dotfiles/.config/lf/scope	 ~/.config/lf/scope
+#
+# # X11
+# ln -sf ~/.dotfiles/.config/x11/xinitrc	 ~/.config/x11/xinitrc
+# ln -sf ~/.dotfiles/.config/x11/xprofile	 ~/.config/x11/xprofile
+#
+# # Shell
+# ln -sf ~/.dotfiles/.config/shell/aliasrc ~/.config/shell/aliasrc
+# ln -sf ~/.dotfiles/.config/shell/bm-dirs ~/.config/shell/bm-dirs
+# ln -sf ~/.dotfiles/.config/shell/bm-files ~/.config/shell/bm-files
+# ln -sf ~/.dotfiles/.config/shell/inputrc ~/.config/shell/inputrc
+# ln -sf ~/.dotfiles/.config/shell/profile ~/.config/shell/profile
+#
+# # Zsh
+# ln -sf ~/.dotfiles/.config/zsh/.zshrc ~/.config/zsh/.zshrc
