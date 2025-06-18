@@ -1,5 +1,6 @@
 let mapleader =","
 
+" Automatically install vim-plug (Linux)
 if ! filereadable(system('echo -n "${XDG_CONFIG_HOME:-$HOME/.config}/nvim/autoload/plug.vim"'))
 	echo "Downloading junegunn/vim-plug to manage plugins..."
 	silent !mkdir -p ${XDG_CONFIG_HOME:-$HOME/.config}/nvim/autoload/
@@ -7,10 +8,20 @@ if ! filereadable(system('echo -n "${XDG_CONFIG_HOME:-$HOME/.config}/nvim/autolo
 	autocmd VimEnter * PlugInstall
 endif
 
+" Automatically install vim-plug (Windows)
+" let data_dir = stdpath('data') . '/site'
+" if empty(glob(data_dir . '/autoload/plug.vim'))
+"   silent execute '!curl -fLo ' . data_dir . '/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+"   autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+" endif
+
+
 map ,, :keepp /<++><CR>ca<
 imap ,, <esc>:keepp /<++><CR>ca<
 
 call plug#begin(system('echo -n "${XDG_CONFIG_HOME:-$HOME/.config}/nvim/plugged"'))
+" Uncomment below line for Windows
+" call plug#begin(stdpath('data') . '/plugged')
 Plug 'tpope/vim-surround'
 Plug 'preservim/nerdtree'
 Plug 'junegunn/goyo.vim'
@@ -19,9 +30,11 @@ Plug 'vimwiki/vimwiki'
 Plug 'vim-airline/vim-airline'
 Plug 'tpope/vim-commentary'
 Plug 'ap/vim-css-color'
+Plug 'sainnhe/gruvbox-material'
 Plug 'vuciv/golf'
 call plug#end()
 
+" General settings
 set title
 set bg=light
 set mouse=a
@@ -29,9 +42,14 @@ set nohlsearch
 set clipboard+=unnamedplus
 set noshowmode
 set noruler
+set number relativenumber
+set wildmode=longest,list,full
 set laststatus=0
+set splitbelow splitright " Don't be retarded
 set noshowcmd
-let color = "unokai"
+
+" Colorscheme
+let color = "gruvbox-material"
 execute 'colorscheme ' . color
 
 " Some basics:
@@ -39,9 +57,6 @@ execute 'colorscheme ' . color
 	filetype plugin on
 	syntax on
 	set encoding=utf-8
-	set number relativenumber
-" Enable autocompletion:
-	set wildmode=longest,list,full
 " Disables automatic commenting on newline:
 	autocmd FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
 " Perform dot commands over visual blocks:
@@ -51,8 +66,6 @@ execute 'colorscheme ' . color
 	autocmd! User GoyoLeave nested set bg=light | execute 'colorscheme ' . color
 " Spell-check set to <leader>o, 'o' for 'orthography':
 	map <leader>o :setlocal spell! spelllang=en_us<CR>
-" Splits open at the bottom and right, which is non-retarded, unlike vim defaults.
-	set splitbelow splitright
 
 " Nerd tree
 	map <leader>n :NERDTreeToggle<CR>
@@ -68,11 +81,14 @@ execute 'colorscheme ' . color
 	let g:airline_symbols.maxlinenr = ' '
 	let g:airline#extensions#whitespace#symbol = '!'
 
-" Shortcutting split navigation, saving a keypress:
+" Split & buffer navigation:
 	map <C-h> <C-w>h
 	map <C-j> <C-w>j
 	map <C-k> <C-w>k
 	map <C-l> <C-w>l
+	map <leader>j :bnext<CR>
+	map <leader>k :bprevious<CR>
+	map <leader>d :bdelete<CR>
 
 " Replace ex mode with gq
 	map Q gq
