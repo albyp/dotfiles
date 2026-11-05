@@ -1,0 +1,60 @@
+# Paths (relative to ~) that dotcheck should never suggest managing.
+# Shell globs: * matches anything. One per line. Edit with `ebi`.
+
+# Logins, keys and secrets — never in a public repo
+.ssh
+.gnupg
+.config/gh
+.config/homelab
+.config/chezmoi
+.git-credentials
+.netrc
+.docker
+.claude
+.claude.json
+.copilot
+
+# History and caches
+.*_history
+.lesshst
+.wget-hsts
+.cache
+.local
+.local/*
+.npm
+.dotnet
+.sudo_as_admin_successful
+
+# Desktop session files (Raspberry Pi OS desktop)
+.Xauthority
+.xsession-errors*
+.dbus
+.config/kanshi
+.config/labwc
+.config/lxterminal
+.config/wf-panel-pi
+.config/xsettingsd
+.config/pulse
+.config/mimeapps.list
+.config/user-dirs.*
+.config/com.raspberrypi.connect
+.config/chromium
+.config/mozilla
+
+# App state, managed by the apps themselves
+.config/Code
+.config/code-server
+.config/GitHub
+.vscode
+.vscode-server
+.config/betbot
+.config/nordvpn
+.config/qBittorrent
+.config/systemd
+.config/procps
+
+# Defaults and leftovers
+.profile
+.bash_logout
+.bash_aliases
+.bashrc.bak-*

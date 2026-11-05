@@ -1,0 +1,71 @@
+# Aliases shared by bash and zsh. Edit with `eba`.
+
+# -- Navigation ----------------------------------------------------------------
+alias ..='cd ..'
+alias ...='cd ../..'
+# (no `~` alias needed: autocd in both shells makes a bare `~` go home)
+
+# -- ls variants ---------------------------------------------------------------
+alias ls='ls --color=auto --group-directories-first'
+alias la='ls -a --color=auto --group-directories-first'
+alias ll='ls -laF --color=auto --group-directories-first'
+
+# -- Editor --------------------------------------------------------------------
+export EDITOR=nvim VISUAL=nvim
+alias v='nvim'
+alias vi='nvim'
+alias vim='nvim'
+alias e='$EDITOR'
+
+# -- Git -----------------------------------------------------------------------
+alias gs='git status'
+alias ga='git add'
+alias gc='git commit -m'
+alias gp='git push'
+alias gpl='git pull'
+alias gd='git diff'
+alias gl='git log --oneline --graph --decorate -20'
+
+# -- Docker --------------------------------------------------------------------
+alias dc='docker compose'
+alias dps='docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"'
+alias dlg='docker logs -f --tail 100'
+
+# -- System --------------------------------------------------------------------
+alias update='sudo apt update && sudo apt upgrade -y'
+alias ports='ss -tulnp'
+alias myip='hostname -I | awk "{print \$1}"'
+alias mem='free -h'
+alias disk='df -h /'
+command -v vcgencmd >/dev/null 2>&1 && alias temp='vcgencmd measure_temp'   # Raspberry Pi only
+command -v sensors  >/dev/null 2>&1 && alias temp='sensors'                 # other machines (lm-sensors)
+
+# -- tmux ----------------------------------------------------------------------
+alias t='tmux'
+alias ta='tmux attach -t'
+alias tl='tmux ls'
+alias tn='tmux new -s'
+alias tk='tmux kill-session -t'
+
+# -- Safer, chattier file commands (from Luke Smith's voidrice) ----------------
+alias cp='cp -iv'      # ask before overwriting
+alias mv='mv -iv'
+alias rm='rm -vI'      # ask once when removing more than 3 files
+alias mkdir='mkdir -pv'
+
+# -- Colour and sizes ----------------------------------------------------------
+alias grep='grep --color=auto'
+alias diff='diff --color=auto'
+alias ip='ip -color=auto'
+alias df='df -h'
+alias du='du -h'
+
+# -- Debian names some tools differently ---------------------------------------
+command -v batcat >/dev/null 2>&1 && ! command -v bat >/dev/null 2>&1 && alias bat='batcat'
+command -v fdfind >/dev/null 2>&1 && ! command -v fd  >/dev/null 2>&1 && alias fd='fdfind'
+
+# -- Dotfiles (chezmoi) --------------------------------------------------------
+# dotcheck and dotadd live in ~/.local/bin
+alias dotup='chezmoi update'      # pull from GitHub and apply
+alias dotdiff='chezmoi diff'      # what apply would change
+alias dotcd='chezmoi cd'          # shell in the dotfiles repo (exit to return)

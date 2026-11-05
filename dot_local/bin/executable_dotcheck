@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+# dotcheck — is this machine in sync with the dotfiles repo?
+#
+#   1. managed files changed here or in the repo but not applied   (chezmoi status)
+#   2. repo changes not committed or not pushed                      (git)
+#   3. configs in ~ and ~/.config that chezmoi doesn't manage yet   (chezmoi unmanaged)
+#
+# Things that should never be managed (logins, app state, keys) are listed in
+# ~/.config/shell/dotcheck-ignore. Add a line there to silence one.
+set -u
+
+command -v chezmoi >/dev/null 2>&1 || { echo "dotcheck: chezmoi isn't installed"; exit 1; }
+src="$(chezmoi source-path)"
+ignore_file="$HOME/.config/shell/dotcheck-ignore"
+bold=$'\e[1m'; dim=$'\e[2m'; green=$'\e[32m'; yellow=$'\e[33m'; reset=$'\e[0m'
+problems=0
+
+section() { printf '\n%s%s%s\n' "$bold" "$1" "$reset"; }
+ok()      { printf '  %s✓ %s%s\n' "$green" "$1" "$reset"; }
+
+# -- 1. Applied? ---------------------------------------------------------------
+section "Managed files"
+st="$(chezmoi status 2>&1)"
+if [ -z "$st" ]; then
+  ok "home folder matches the repo"
+else
+  problems=$((problems + 1))
+  printf '%s\n' "$st" | sed 's/^/  /'
+  printf '  %sedited here: chezmoi re-add   ·   changed in repo: chezmoi apply   ·   see both: chezmoi diff%s\n' "$dim" "$reset"
+fi
+
+# -- 2. Committed and pushed? --------------------------------------------------
+section "Repo ($src)"
+gst="$(git -C "$src" status --porcelain)"
+if [ -n "$gst" ]; then
+  problems=$((problems + 1))
+  printf '%s\n' "$gst" | sed 's/^/  /'
+  printf '  %scommit: chezmoi git -- add -A && chezmoi git -- commit -m "..."%s\n' "$dim" "$reset"
+else
+  ok "nothing uncommitted"
+fi
+if git -C "$src" rev-parse --abbrev-ref '@{u}' >/dev/null 2>&1; then
+  timeout 10 git -C "$src" fetch -q 2>/dev/null || printf '  %s(couldn'"'"'t reach the remote; ahead/behind may be stale)%s\n' "$dim" "$reset"
+  read -r behind ahead < <(git -C "$src" rev-list --left-right --count '@{u}...HEAD')
+  if [ "$ahead" -gt 0 ];  then problems=$((problems + 1)); printf '  %s%s commit(s) not pushed%s: chezmoi git -- push\n' "$yellow" "$ahead" "$reset"; fi
+  if [ "$behind" -gt 0 ]; then problems=$((problems + 1)); printf '  %s%s commit(s) on GitHub not here%s: chezmoi update\n' "$yellow" "$behind" "$reset"; fi
+  [ "$ahead" -eq 0 ] && [ "$behind" -eq 0 ] && ok "in step with $(git -C "$src" rev-parse --abbrev-ref '@{u}')"
+else
+  problems=$((problems + 1)); printf '  %sno remote set, so nothing is pushed anywhere%s\n' "$yellow" "$reset"
+fi
+
+# -- 3. Anything new worth managing? -------------------------------------------
+section "Not managed yet"
+patterns=()
+[ -r "$ignore_file" ] && while IFS= read -r line; do
+  case "$line" in ''|\#*) continue ;; esac
+  patterns+=("$line")
+done < "$ignore_file"
+
+found=0
+while IFS= read -r path; do
+  rel="${path#"$HOME"/}"
+  case "$rel" in .*) ;; *) continue ;; esac          # only dotfiles and .config
+  [ "$rel" = ".config" ] && continue
+  skip=0
+  for p in "${patterns[@]}"; do
+    # shellcheck disable=SC2053  # glob match on purpose
+    [[ "$rel" == $p ]] && { skip=1; break; }
+  done
+  [ "$skip" -eq 1 ] && continue
+  printf '  ~/%s\n' "$rel"; found=$((found + 1))
+done < <(chezmoi unmanaged --path-style=absolute "$HOME" "$HOME/.config" 2>/dev/null | sort -u)
+
+if [ "$found" -eq 0 ]; then
+  ok "nothing new"
+else
+  printf '  %smanage one: dotadd <path>   ·   never manage it: add it to %s%s\n' "$dim" "${ignore_file/#$HOME/\~}" "$reset"
+fi
+
+echo
+if [ "$problems" -eq 0 ] && [ "$found" -eq 0 ]; then
+  echo "${green}All in sync.${reset}"
+else
+  [ "$problems" -gt 0 ] && echo "${yellow}${problems} sync issue(s) above.${reset}"
+  [ "$found" -gt 0 ] && echo "${yellow}${found} unmanaged config(s) to review: dotadd them, or add them to the ignore list.${reset}"
+fi

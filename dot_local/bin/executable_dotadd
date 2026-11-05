@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# dotadd <file>... — start managing config files with chezmoi.
+#
+# Refuses anything that looks like a secret (keys, tokens, logins), because
+# the dotfiles repo is public. With autoCommit/autoPush on (see
+# .chezmoi.toml.tmpl) chezmoi commits and pushes the change itself.
+#
+#   dotadd ~/.config/btop/btop.conf
+#   dotadd --force <file>     # you've checked it and it's safe
+set -u
+
+force=0
+files=()
+for a in "$@"; do
+  case "$a" in
+    --force) force=1 ;;
+    -h|--help) sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *) files+=("$a") ;;
+  esac
+done
+[ "${#files[@]}" -gt 0 ] || { echo "usage: dotadd [--force] <file>..."; exit 1; }
+
+# Paths that must never be in a public repo
+never='(/\.ssh/|/\.gnupg/|/\.config/homelab/|/\.config/gh/|/\.config/chezmoi/|/\.git-credentials$|/\.netrc$|\.env$|\.key$|\.pem$|credentials|secret|token)'
+# Content that looks like a secret
+looks_secret='(BEGIN [A-Z ]*PRIVATE KEY|ghp_[A-Za-z0-9]{20,}|github_pat_|xox[bap]-|AKIA[0-9A-Z]{16}|AGE-SECRET-KEY-|(password|passwd|secret|token|api[_-]?key)[[:space:]]*[:=][[:space:]]*[^[:space:]$]{6,})'
+
+status=0
+for f in "${files[@]}"; do
+  p="$(readlink -f -- "$f" 2>/dev/null || echo "$f")"
+  if [ ! -e "$p" ]; then echo "dotadd: $f doesn't exist"; status=1; continue; fi
+  if [[ "$p" =~ $never ]]; then
+    echo "dotadd: refusing $f — that path holds secrets or logins and must not go in the public repo"
+    status=1; continue
+  fi
+  if [ "$force" -eq 0 ] && grep -rIEiq -- "$looks_secret" "$p" 2>/dev/null; then
+    echo "dotadd: $f looks like it contains a secret:"
+    grep -rIEin -- "$looks_secret" "$p" | cut -d: -f1 | head -5 | sed 's/^/    line /'
+    echo "  Move the secret out (e.g. to ~/.zshrc.local), or re-run with --force if it's a false alarm."
+    status=1; continue
+  fi
+  if chezmoi add -- "$p"; then
+    echo "dotadd: now managing ${p/#$HOME/\~} -> $(chezmoi source-path "$p" | sed "s#$(chezmoi source-path)/##")"
+  else
+    status=1
+  fi
+done
+
+[ "$status" -eq 0 ] && echo "dotadd: tip — edit it with: chezmoi edit --apply <file>, or give it a shortcut in bm-files (ebf)"
+exit "$status"

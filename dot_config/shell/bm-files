@@ -1,0 +1,12 @@
+# File bookmarks: <name> <path>
+# Typing the name opens the file in $EDITOR. Files managed by chezmoi are edited
+# in the dotfiles repo and applied on save, so changes are never lost.
+eba    ~/.config/shell/aliasrc
+ebm    ~/.config/shell/bm-dirs
+ebf    ~/.config/shell/bm-files
+ezrc   ~/.zshrc
+ebrc   ~/.bashrc
+etmux  ~/.config/tmux/tmux.conf
+envim  ~/.config/nvim/init.lua
+ebi    ~/.config/shell/dotcheck-ignore
+estar  ~/.config/starship.toml

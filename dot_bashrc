@@ -1,0 +1,51 @@
+# ~/.bashrc — managed by chezmoi (edit with `ebrc`). zsh is the main shell; this
+# keeps bash pleasant for scripts, fallback logins and machines without zsh.
+
+# If not running interactively, don't do anything
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
+# -- PATH ----------------------------------------------------------------------
+case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) PATH="$HOME/.local/bin:$PATH" ;; esac
+
+# -- Options -------------------------------------------------------------------
+shopt -s autocd cdspell dirspell checkwinsize histappend
+
+# -- History -------------------------------------------------------------------
+HISTSIZE=10000
+HISTFILESIZE=20000
+HISTCONTROL=ignoreboth:erasedups
+HISTIGNORE="ls:ll:la:cd:pwd:exit:clear:history"
+PROMPT_COMMAND="history -a;history -c;history -r; $PROMPT_COMMAND"
+
+# -- Completion ----------------------------------------------------------------
+bind "set completion-ignore-case on"
+bind "set show-all-if-ambiguous on"
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
+fi
+
+# -- Shared aliases and bookmarks ----------------------------------------------
+[ -r ~/.config/shell/aliasrc ] && . ~/.config/shell/aliasrc
+[ -r ~/.config/shell/bookmarks.sh ] && . ~/.config/shell/bookmarks.sh
+alias reload='source ~/.bashrc && echo "bashrc reloaded"'
+
+# -- Tools ---------------------------------------------------------------------
+command -v fzf >/dev/null && eval "$(fzf --bash)"
+command -v zoxide >/dev/null && eval "$(zoxide init bash)"
+
+# -- Prompt --------------------------------------------------------------------
+if command -v starship >/dev/null; then
+  eval "$(starship init bash)"
+else
+  PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w \$\[\033[00m\] '
+fi
+
+# Machine-only additions that shouldn't be in git
+[ -r ~/.bashrc.local ] && . ~/.bashrc.local

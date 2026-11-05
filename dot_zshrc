@@ -1,0 +1,63 @@
+# ~/.zshrc — managed by chezmoi (edit with `ezrc`)
+
+# -- PATH ----------------------------------------------------------------------
+typeset -U path
+path=("$HOME/.local/bin" $path)
+
+# -- Options -------------------------------------------------------------------
+setopt autocd               # type a directory name to cd into it
+setopt interactive_comments # allow # comments at the prompt
+setopt no_beep
+setopt extended_glob
+
+# -- History -------------------------------------------------------------------
+HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/zsh/history"
+[ -d "${HISTFILE:h}" ] || mkdir -p "${HISTFILE:h}"
+HISTSIZE=50000
+SAVEHIST=50000
+setopt share_history        # history is shared live between tmux panes
+setopt hist_ignore_all_dups
+setopt hist_ignore_space    # a command starting with a space isn't saved
+setopt hist_reduce_blanks
+
+# -- Completion ----------------------------------------------------------------
+autoload -Uz compinit
+mkdir -p "${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
+compinit -d "${XDG_CACHE_HOME:-$HOME/.cache}/zsh/zcompdump"
+zmodload zsh/complist
+zstyle ':completion:*' menu select                          # arrow through matches
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'   # case-insensitive
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+_comp_options+=(globdots)                                   # complete dotfiles too
+bindkey -M menuselect '^[[Z' reverse-menu-complete          # shift-tab goes back
+
+# -- Keys ----------------------------------------------------------------------
+bindkey -e                  # emacs-style line editing (as in bash). For vi mode: bindkey -v
+autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
+zle -N up-line-or-beginning-search
+zle -N down-line-or-beginning-search
+bindkey '^[[A' up-line-or-beginning-search     # up arrow: history matching what's typed
+bindkey '^[[B' down-line-or-beginning-search
+bindkey '^[[1;5C' forward-word                 # ctrl-right
+bindkey '^[[1;5D' backward-word                # ctrl-left
+bindkey '^[[3~' delete-char
+
+# -- Shared aliases and bookmarks ----------------------------------------------
+[ -r ~/.config/shell/aliasrc ] && source ~/.config/shell/aliasrc
+[ -r ~/.config/shell/bookmarks.sh ] && source ~/.config/shell/bookmarks.sh
+alias reload='source ~/.zshrc && echo "zshrc reloaded"'
+
+# -- Tools ---------------------------------------------------------------------
+command -v fzf >/dev/null && source <(fzf --zsh)               # ctrl-r history, ctrl-t files
+command -v zoxide >/dev/null && eval "$(zoxide init zsh)"      # z <part-of-dir> jumps there
+command -v starship >/dev/null && eval "$(starship init zsh)"
+
+# -- Plugins (Debian packages) -------------------------------------------------
+[ -r /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ] &&
+  source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+# must be last
+[ -r /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ] &&
+  source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# Machine-only additions that shouldn't be in git
+[ -r ~/.zshrc.local ] && source ~/.zshrc.local

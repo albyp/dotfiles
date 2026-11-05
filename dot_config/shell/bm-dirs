@@ -1,0 +1,14 @@
+# Directory bookmarks: <name> <path>
+#   dl       -> cd ~/Downloads
+#   ~dl      -> ~/Downloads anywhere in zsh (mv file ~dl, cp *.pdf ~dl/)
+# Paths that don't exist on a machine are skipped there. Edit with `ebm`.
+h     ~
+dl    ~/Downloads
+docs  ~/Documents
+cf    ~/.config
+lg    ~/LocalGit
+dot   ~/LocalGit/dotfiles
+hl    ~/LocalGit/homelab
+sc    ~/.local/bin
+apps  /srv/appdata
+bb    ~/betbot

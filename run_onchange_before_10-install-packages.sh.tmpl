@@ -1,0 +1,23 @@
+#!/bin/sh
+# Installs the tools these dotfiles expect. chezmoi re-runs this whenever the list changes.
+# Debian/Ubuntu only; anything a release doesn't package is skipped with a note.
+set -u
+pkgs="zsh zsh-autosuggestions zsh-syntax-highlighting starship neovim tmux fzf ripgrep fd-find bat eza zoxide git gh btop jq age curl"
+
+command -v apt-get >/dev/null 2>&1 || { echo "dotfiles: not Debian/Ubuntu, install these yourself: $pkgs"; exit 0; }
+
+missing=""
+for p in $pkgs; do
+  dpkg -s "$p" >/dev/null 2>&1 || missing="$missing $p"
+done
+[ -z "$missing" ] && exit 0
+
+# starship may already be installed outside apt (e.g. /usr/local/bin)
+case " $missing " in *" starship "*) command -v starship >/dev/null 2>&1 && missing=$(echo "$missing" | sed 's/ starship//') ;; esac
+[ -z "$(echo "$missing" | tr -d ' ')" ] && exit 0
+
+echo "dotfiles: installing$missing"
+sudo apt-get update -qq
+for p in $missing; do
+  sudo apt-get install -y -qq "$p" >/dev/null 2>&1 || echo "dotfiles: $p is not available here, skipped"
+done
