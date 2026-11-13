@@ -2,7 +2,7 @@
 # Installs the tools these dotfiles expect. chezmoi re-runs this whenever the list changes.
 # Debian/Ubuntu only; anything a release doesn't package is skipped with a note.
 set -u
-pkgs="zsh zsh-autosuggestions zsh-syntax-highlighting starship neovim tmux fzf ripgrep fd-find bat eza zoxide git gh btop jq age curl"
+pkgs="build-essential zsh zsh-autosuggestions zsh-syntax-highlighting starship neovim tmux fzf ripgrep fd-find bat eza zoxide git gh btop jq age curl"
 
 command -v apt-get >/dev/null 2>&1 || { echo "dotfiles: not Debian/Ubuntu, install these yourself: $pkgs"; exit 0; }
 
