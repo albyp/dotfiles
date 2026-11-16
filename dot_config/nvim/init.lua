@@ -150,5 +150,6 @@ require("lazy").setup({
       })
     end },
   { "windwp/nvim-autopairs", event = "InsertEnter", config = true },
-  { "lewis6991/gitsigns.nvim", config = true },
+  -- v2.x needs Neovim 0.11; Debian 13 ships 0.10, so stay on the last 1.x release
+  { "lewis6991/gitsigns.nvim", tag = "v1.0.2", config = true },
 })
